@@ -84,3 +84,57 @@ greenButton.addEventListener("click", function () {
 yellowButton.addEventListener("click", function () {
     new Audio("sounds/yellow.wav").play();
 });
+
+
+const welcomeDelay = 120;
+
+/**
+ * Plays the welcome pattern on the screen 
+ */
+async function playWelcome() {
+    let welcomePattern = ["G", "R", "Y", "Y", "B", "B", "R", "B", "Y", "Y", "G", "G"];
+    for (let i = 0; i < welcomePattern.length; i++) {
+        if (welcomePattern[i] == "R") {
+            await changeColor(redSq, "#FF69B4");
+            new Audio("sounds/red.wav").play();
+            await changeColor(redSq, "#ff0000");
+        }
+        if (welcomePattern[i] == "B") {
+            await changeColor(blueSq, "lightblue");
+            new Audio("sounds/blue.wav").play();
+            await changeColor(blueSq, "#0000bb");
+        }
+        if (welcomePattern[i] == "G") {
+            await changeColor(greenSq, "lightgreen");
+            new Audio("sounds/green.wav").play();
+            await changeColor(greenSq, "forestgreen");
+        }
+        if (welcomePattern[i] == "Y") {
+            await changeColor(yellowSq, "lightyellow");
+            new Audio("sounds/yellow.wav").play();
+            await changeColor(yellowSq, "goldenrod");
+        }
+    }
+}
+
+/**
+ * Changes the color based off the input to the color that it wants to become with a delay in time shown 
+ * @param {} inputCol 
+ * @param {*} newCol 
+ * @returns 
+ */
+function changeColor(inputCol, newCol) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            inputCol.style.backgroundColor = newCol;
+            resolve(); // promise is resolved
+        }, welcomeDelay);
+    });
+}
+
+
+playButton.addEventListener("click", function () {
+    playWelcome();
+});
+
+
