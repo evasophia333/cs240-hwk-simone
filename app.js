@@ -58,7 +58,7 @@ yellowButton.addEventListener("mousedown", function () {
 redButton.addEventListener("mousedown", function () {
     redButton.style.backgroundColor = '#FF7F7F';
     arrOfClicked.push('R');
-    clickedButton();
+    checkEquality();
 });
 redButton.addEventListener("mouseup", function () {
     redButton.style.backgroundColor = '#ff0000';
@@ -70,7 +70,7 @@ redButton.addEventListener('mouseout', function () {
 blueButton.addEventListener("mousedown", function () {
     blueButton.style.backgroundColor = "lightblue";
     arrOfClicked.push('B');
-    clickedButton();
+    checkEquality();
 });
 blueButton.addEventListener("mouseup", function () {
     blueButton.style.backgroundColor = "#0000bb";
@@ -82,7 +82,7 @@ blueButton.addEventListener('mouseout', function () {
 greenButton.addEventListener("mousedown", function () {
     greenButton.style.backgroundColor = "lightgreen";
     arrOfClicked.push('G');
-    clickedButton();
+    checkEquality();
 });
 greenButton.addEventListener("mouseup", function () {
     greenButton.style.backgroundColor = "forestgreen";
@@ -94,7 +94,7 @@ greenButton.addEventListener('mouseout', function () {
 yellowButton.addEventListener("mousedown", function () {
     yellowButton.style.backgroundColor = "lightyellow";
     arrOfClicked.push('Y');
-    clickedButton();
+    checkEquality();
 
 });
 yellowButton.addEventListener("mouseup", function () {
@@ -168,63 +168,92 @@ function changeColor(inputCol, newCol, delayTime) {
         }, delayTime);
     });
 }
-
+let roundStart = 1;
 /**
  * Plays the welcome sequence when the play button is clicked
  */
 playButton.addEventListener("click", function () {
     //reset the screen and the lists here 
     //playWelcome();
-    for (let i = 0; i < rounds.value; i++) {
-        playGame(['Y', 'R'], i);
-    }
-    //this needs to become an await function I think because it has 
-
+    playRound(inputArr, roundStart);
+    checkEquality();
 });
+
+var nextRound = 0;
+function checkEquality() {
+    if (arrOfClicked.length >= 1 && displayList.length >= 1) { //ensures that it doesnt come in here on the first round
+        if (arrOfClicked.length === displayList.length) { //ensures that it waits for user to input all the optinos
+            console.log(arrOfClicked.length);
+            if (arrayEquals(displayList, arrOfClicked)) {
+                if (nextRound <= rounds.value) {
+                    nextRound = roundStart + 1;
+                    playRound(inputArr, nextRound);
+                }
+            } else {
+                console.log('ending HERE')
+            }
+        } else {
+            console.log('Ending here')
+        }
+    } else {
+        console.log('ENDING here')
+    }
+    console.log('RoundNumber:' + nextRound);
+
+}
 
 var inputSequence = [];
 var round = 10;
+var inputArr = ['Y', 'R', 'R'];
 
-async function playGame(inputVal, roundNumber) {
+/**
+ * prints the sequence to the screen 
+ * @param {*} inputVal the color sequence 
+ * @param {*} roundNumber the round number that we are on
+ */
+async function playRound(inputVal, roundNumber) {
     inputSequence = inputVal;
     round = roundNumber;
-    if (roundNumber <= rounds.value) {
+    if (roundNumber <= rounds.value) { //base case if we call it recursivley 
         let delay = 0;
+        displayList = [];
         for (let i = 0; i < roundNumber; i++) {
-            if (i == 0) {
+            if (i == 0) { //delay after 4 seconds for the first color then 120 seconds 
                 delay = 4000;
             } else {
-                delay = 120;
+                delay = 400;
             }
             if (inputSequence[i] == "R") {
                 await changeColor(redSq, "#FF69B4", delay);
                 new Audio("sounds/red.wav").play();
                 delay = 120;
                 await changeColor(redSq, "#ff0000", delay);
+                displayList.push('R');
             }
             if (inputSequence[i] == "B") {
                 await changeColor(blueSq, "lightblue"), delay;
                 new Audio("sounds/blue.wav").play();
                 delay = 120;
                 await changeColor(blueSq, "#0000bb", delay);
+                displayList.push('B');
             }
             if (inputSequence[i] == "G") {
                 await changeColor(greenSq, "lightgreen", delay);
                 new Audio("sounds/green.wav").play();
                 delay = 120;
                 await changeColor(greenSq, "forestgreen", delay);
+                displayList.push('G');
             }
             if (inputSequence[i] == "Y") {
                 await changeColor(yellowSq, "lightyellow", delay);
                 new Audio("sounds/yellow.wav").play();
                 delay = 120;
                 await changeColor(yellowSq, "goldenrod", delay);
+                displayList.push('Y');
             }
-            displayList.push(inputSequence[i]);
         }
-        console.log(arrOfClicked);
-        console.log(displayList);
     }
+    console.log(displayList)
 }
 
 /**
@@ -235,6 +264,7 @@ function winningScreen() {
     new Audio("sounds/win.mp3").play();
     printedText.innerHTML = 'YAY! You Won :)';
 }
+
 /**
  * Displays the loosing screen, chaning background, sounds and printing to the screen
  */
@@ -245,6 +275,7 @@ function loosingScreen() {
     printedText.innerHTML = 'DARN! You lost :(';
 
 }
+
 function arrayEquals(a, b) {
     if (a.length == b.length) {
         for (let i = 0; i < a.length; i++) {
@@ -258,31 +289,12 @@ function arrayEquals(a, b) {
     return false;
 }
 
-function clickedButton() {
-    console.log("arrClicked: " + arrOfClicked);
-    console.log("displayLIst: " + displayList);
-    if (arrayEquals(arrOfClicked, displayList)) {
-        console.log(inputSequence);
-        console.log(displayList);
 
-        console.log(arrayEquals(displayList, inputSequence))
-        if (arrayEquals(displayList, inputSequence)) {
-            winningScreen();
-        } else { //go to the next round
-            if (round < rounds.value) {
-                new Audio("sounds/nextRound.wav").play();
-                playGame(inputSequence, round++);
-                console.log('newRound');
-                arrOfClicked = [];
-            } else {
-                console.log('here')
-                loosingScreen();
-            }
-        }
-    } else {
-        loosingScreen();
-    }
-}
+
+//if the size of the array is less than the round number then wait until it is the right number 
+//when it is the right number check to see if the array that is played matches the array that was typed in 
+// if it matches then figure out if you need to go to the next round or if the game is over 
+//if it doesnt match then you loose the game 
 
 //Find the sequence
 //determine the number of rounds
