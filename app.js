@@ -5,12 +5,12 @@ const greenButton = document.querySelector("#greenSq");
 const yellowButton = document.querySelector("#yellowSq");
 const background = document.querySelector('body');
 const printedText = document.querySelector('#status');
-var arrOfClicked = [];
-const defaultRound = 10;
-var inputArr = ['B', 'Y', 'B', 'G', 'B', 'R'];
-var displayList = []
 const welcomeDelay = 120;
 const firstRoundDelay = 4000;
+var arrOfClicked = [];
+var inputArr = ['B', 'Y', 'B', 'G', 'B', 'R'];
+var welcomeSequence = ["B", "G", "B", "R", "G", "R", "R", "B", "G", "G", "G", "R"];
+var displayList = []
 let roundStart = 1;
 
 /**
@@ -127,14 +127,11 @@ yellowButton.addEventListener("click", function () {
     new Audio("sounds/yellow.wav").play();
 });
 
-
-
 /**
  * Plays the welcome pattern on the screen 
  */
-async function playWelcome() {
+async function playWelcome(welcomePattern) {
     try {
-        let welcomePattern = ["B", "G", "B", "R", "G", "R", "R", "B", "G", "G", "G", "R"];
         for (let i = 0; i < welcomePattern.length; i++) {
             if (welcomePattern[i] == "R") {
                 await changeColor(redSq, "#FF69B4", welcomeDelay);
@@ -181,8 +178,13 @@ function changeColor(inputCol, newCol, delayTime) {
  * Plays the welcome sequence when the play button is clicked
  */
 playButton.addEventListener("click", function () {
-    //reset the screen and the lists here 
-    playWelcome();
+    if (rounds.value == '') {
+        roundStart = 10;
+    } else {
+        roundStart = rounds.value;
+    }
+    resetScreenAndVar();
+    playWelcome(welcomeSequence);
     playFirstRound(inputArr, roundStart);
 });
 
@@ -198,6 +200,7 @@ function printNextRound() {
         }, 800);
     });
 }
+
 /**
  * prints the round number to the screen
  * @returns 
@@ -210,7 +213,6 @@ function printRoundNumber() {
         }, 800);
     });
 }
-
 
 /**
  * checks for the equality of the displayed colors in a string and the user input string 
@@ -234,15 +236,21 @@ async function checkEquality() {
                     loosingScreen();
                 }
             } else {
-                lengthLeft = displayList.length - arrOfClicked.length;
-                printedText.innerHTML = 'So far so good! ' + lengthLeft + ' more to go!';
+                //if the elements at that spot match print this if not then print loosing screen 
+                for (let i = 0; i < arrOfClicked.length; i++) {
+                    if (arrOfClicked[i] != displayList[i]) {
+                        loosingScreen();
+                    } else {
+                        lengthLeft = displayList.length - arrOfClicked.length;
+                        printedText.innerHTML = 'So far so good! ' + lengthLeft + ' more to go!';
+                    }
+                }
             }
         }
     } catch (error) {
         console.log(error);
     }
 }
-
 
 /**
  * prints the sequence to the screen 
@@ -309,8 +317,20 @@ function loosingScreen() {
     new Audio("sounds/wrong.wav").play();
     new Audio("sounds/nextRound.wav").play();
     printedText.innerHTML = 'Incorrect! You lost :(';
-
 }
+/**
+ * Resets the screen and all varaibles if the user pushes the play simone button again 
+ */
+function resetScreenAndVar() {
+    //reset the screen and the lists here 
+    arrOfClicked = [];
+    inputArr = ['B', 'Y', 'B', 'G', 'B', 'R'];
+    displayList = []
+    roundStart = 1;
+    printedText.innerHTML = '';
+    background.style.backgroundColor = 'black';
+}
+
 /**
  * Determines the equality between two different arrays 
  * @param {} a 
@@ -321,7 +341,6 @@ function arrayEquals(a, b) {
     if (a.length == b.length) {
         for (let i = 0; i < a.length; i++) {
             if (a[i] != b[i]) {
-                console.log('here')
                 return false;
             }
         }
