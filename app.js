@@ -129,7 +129,7 @@ var numberOfRounds = 0;
  * Plays the welcome pattern on the screen 
  */
 async function playWelcome() {
-    let welcomePattern = ["B", "B", "B", "R", "G", "R", "R", "B", "G", "G", "G", "R"];
+    let welcomePattern = ["B", "G", "B", "R", "G", "R", "R", "B", "G", "G", "G", "R"];
     for (let i = 0; i < welcomePattern.length; i++) {
         if (welcomePattern[i] == "R") {
             await changeColor(redSq, "#FF69B4", welcomeDelay);
@@ -164,44 +164,45 @@ function changeColor(inputCol, newCol, delayTime) {
     return new Promise((resolve) => {
         setTimeout(() => {
             inputCol.style.backgroundColor = newCol;
-            resolve(); // promise is resolved
+            printedText.innerHTML = 'Round ' + roundNum + 'of ' + rounds.value + "!!";
+            resolve();
         }, delayTime);
     });
 }
 let roundStart = 1;
+var roundNum = 0;
 /**
  * Plays the welcome sequence when the play button is clicked
  */
 playButton.addEventListener("click", function () {
     //reset the screen and the lists here 
-    //playWelcome();
+    playWelcome();
     playRound(inputArr, roundStart);
     checkEquality();
 });
 
-var nextRound = 0;
 function checkEquality() {
+    let lengthLeft = 0;
     if (arrOfClicked.length >= 1 && displayList.length >= 1) { //ensures that it doesnt come in here on the first round
         if (arrOfClicked.length === displayList.length) { //ensures that it waits for user to input all the optinos
-            console.log(arrOfClicked.length);
             if (arrayEquals(displayList, arrOfClicked)) {
-                if (nextRound <= rounds.value) {
-                    nextRound = roundStart + 1;
-                    playRound(inputArr, nextRound);
+                if (roundStart < rounds.value) {
+                    roundStart++;
+                    playRound(inputArr, roundStart);
+                } else {
+                    winningScreen();
                 }
             } else {
-                console.log('ending HERE')
+                loosingScreen();
             }
         } else {
-            console.log('Ending here')
+            console.log(displayList.length);
+            console.log(arrOfClicked.length);
+            lengthLeft = displayList.length - arrOfClicked.length;
+            printedText.innerHTML = 'So far so good! ' + lengthLeft + ' more to go!';
         }
-    } else {
-        console.log('ENDING here')
     }
-    console.log('RoundNumber:' + nextRound);
-
 }
-
 var inputSequence = [];
 var round = 10;
 var inputArr = ['Y', 'R', 'R'];
@@ -212,6 +213,7 @@ var inputArr = ['Y', 'R', 'R'];
  * @param {*} roundNumber the round number that we are on
  */
 async function playRound(inputVal, roundNumber) {
+    roundNum = roundNumber;
     inputSequence = inputVal;
     round = roundNumber;
     if (roundNumber <= rounds.value) { //base case if we call it recursivley 
@@ -226,41 +228,41 @@ async function playRound(inputVal, roundNumber) {
             if (inputSequence[i] == "R") {
                 await changeColor(redSq, "#FF69B4", delay);
                 new Audio("sounds/red.wav").play();
-                delay = 120;
+                delay = 400;
                 await changeColor(redSq, "#ff0000", delay);
                 displayList.push('R');
             }
             if (inputSequence[i] == "B") {
                 await changeColor(blueSq, "lightblue"), delay;
                 new Audio("sounds/blue.wav").play();
-                delay = 120;
+                delay = 400;
                 await changeColor(blueSq, "#0000bb", delay);
                 displayList.push('B');
             }
             if (inputSequence[i] == "G") {
                 await changeColor(greenSq, "lightgreen", delay);
                 new Audio("sounds/green.wav").play();
-                delay = 120;
+                delay = 400;
                 await changeColor(greenSq, "forestgreen", delay);
                 displayList.push('G');
             }
             if (inputSequence[i] == "Y") {
                 await changeColor(yellowSq, "lightyellow", delay);
                 new Audio("sounds/yellow.wav").play();
-                delay = 120;
+                delay = 400;
                 await changeColor(yellowSq, "goldenrod", delay);
                 displayList.push('Y');
             }
         }
     }
-    console.log(displayList)
+    arrOfClicked = [];
 }
 
 /**
  * Changes the bacjground color and prints to the screen and plays the sound when the user wins
  */
 function winningScreen() {
-    background.style.backgroundColor = 'lightblue';
+    background.style.backgroundColor = 'DeepSkyBlue';
     new Audio("sounds/win.mp3").play();
     printedText.innerHTML = 'YAY! You Won :)';
 }
@@ -269,13 +271,18 @@ function winningScreen() {
  * Displays the loosing screen, chaning background, sounds and printing to the screen
  */
 function loosingScreen() {
-    background.style.backgroundColor = 'pink';
+    background.style.backgroundColor = 'hotpink';
     new Audio("sounds/wrong.wav").play();
     new Audio("sounds/nextRound.wav").play();
-    printedText.innerHTML = 'DARN! You lost :(';
+    printedText.innerHTML = 'Incorrect! You lost :(';
 
 }
-
+/**
+ * Determines the equality between two different arrays 
+ * @param {} a 
+ * @param {*} b 
+ * @returns 
+ */
 function arrayEquals(a, b) {
     if (a.length == b.length) {
         for (let i = 0; i < a.length; i++) {
