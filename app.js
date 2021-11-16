@@ -7,11 +7,67 @@ const background = document.querySelector('body');
 const printedText = document.querySelector('#status');
 const welcomeDelay = 120;
 const firstRoundDelay = 4000;
-var arrOfClicked = [];
-var inputArr = ['B', 'Y', 'B', 'G', 'B', 'R'];
-var welcomeSequence = ["B", "G", "B", "R", "G", "R", "R", "B", "G", "G", "G", "R"];
-var displayList = []
+var displayList = [];
 let roundStart = 1;
+let axios = require('axios');
+var welcomeVar;
+var inputArr;
+
+/**
+ * Gets the welcome sequence from the API
+ * @returns 
+ */
+async function getWelcome() {
+    try {
+        let response = await axios.get("http://cs.pugetsound.edu/~dchiu/cs240/api/simone/?cmd=start");
+        welcomeVar = response.data.sequence;
+        let roundStart = 0;
+        if (rounds.value == '') {
+            roundStart = 10;
+        } else {
+            roundStart = rounds.value;
+        }
+        let string = `http://cs.pugetsound.edu/~dchiu/cs240/api/simone/?cmd=getSolution&rounds=${roundStart}`;
+        let response2 = await axios.get(string);
+        var playVar = response2.data.key;
+        //Plays the welcome sequence when the play button is clicked
+        playButton.addEventListener("click", function () {
+            resetScreenAndVar();
+            playWelcome(welcomeVar);
+            playFirstRound(playVar, 1); //because it is the first round
+        });
+        return response.data.sequence;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+/**
+ * Gets the sequence from the API with a specified number of rounds
+ * @param {*} numRounds 
+ * @returns 
+ */
+async function getSequence(numRounds) {
+    try {
+        if (numRounds == '') {
+            numRounds = 10;
+        }
+        let string = `http://cs.pugetsound.edu/~dchiu/cs240/api/simone/?cmd=getSolution&rounds=${numRounds}`;
+        //console.log(string)
+        let response = await axios.get(string);
+        var playVar = response.data.key;
+        return response.data.key;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+async function welcome() {
+    await getWelcome();
+    return welcomeVar;
+}
+
+welcome();
 
 /**
  * Changes the color of the buttons when they are mouse over and out 
@@ -175,20 +231,6 @@ function changeColor(inputCol, newCol, delayTime) {
 }
 
 /**
- * Plays the welcome sequence when the play button is clicked
- */
-playButton.addEventListener("click", function () {
-    if (rounds.value == '') {
-        roundStart = 10;
-    } else {
-        roundStart = rounds.value;
-    }
-    resetScreenAndVar();
-    playWelcome(welcomeSequence);
-    playFirstRound(inputArr, roundStart);
-});
-
-/**
  * prints the next round next to the screen 
  * @returns 
  */
@@ -324,7 +366,6 @@ function loosingScreen() {
 function resetScreenAndVar() {
     //reset the screen and the lists here 
     arrOfClicked = [];
-    inputArr = ['B', 'Y', 'B', 'G', 'B', 'R'];
     displayList = []
     roundStart = 1;
     printedText.innerHTML = '';
@@ -349,7 +390,6 @@ function arrayEquals(a, b) {
     return false;
 }
 
-
 /**
  * prints the sequence to the screen for just the first round because the delay is longer
  * @param {*} inputVal the color sequence 
@@ -358,10 +398,16 @@ function arrayEquals(a, b) {
 async function playFirstRound(inputSequence, roundNumber) {
     try {
         round = roundNumber;
+        if (rounds.value == '') {
+            rounds.value = 10;
+        }
+        inputArr = inputSequence;
+        console.log(inputArr)
         if (roundNumber <= rounds.value) { //base case if we call it recursivley 
             let delay = 400; //
             displayList = [];
             for (let i = 0; i < roundNumber; i++) {
+                //console.log(inputSequence);
                 if (inputSequence[i] == "R") {
                     await changeColor(redSq, "#FF69B4", firstRoundDelay);
                     new Audio("sounds/red.wav").play();
