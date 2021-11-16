@@ -24,7 +24,7 @@ async function getWelcome() {
         welcomeVar = response.data.sequence;
         let roundStart = 0;
         if (rounds.value == '') {
-            roundStart = 10;
+            roundStart = 1000;
         } else {
             roundStart = rounds.value;
         }
@@ -33,6 +33,7 @@ async function getWelcome() {
         var playVar = response2.data.key;
         //Plays the welcome sequence when the play button is clicked
         playButton.addEventListener("click", function () {
+            roundStart = rounds.value;
             resetScreenAndVar();
             playWelcome(welcomeVar);
             playFirstRound(playVar, 1); //because it is the first round
@@ -54,9 +55,7 @@ async function getSequence(numRounds) {
             numRounds = 10;
         }
         let string = `http://cs.pugetsound.edu/~dchiu/cs240/api/simone/?cmd=getSolution&rounds=${numRounds}`;
-        //console.log(string)
         let response = await axios.get(string);
-        var playVar = response.data.key;
         return response.data.key;
     } catch (error) {
         console.log(error);
@@ -403,12 +402,10 @@ async function playFirstRound(inputSequence, roundNumber) {
             rounds.value = 10;
         }
         inputArr = inputSequence;
-        console.log(inputArr)
         if (roundNumber <= rounds.value) { //base case if we call it recursivley 
-            let delay = 400; //
+            let delay = 400;
             displayList = [];
             for (let i = 0; i < roundNumber; i++) {
-                //console.log(inputSequence);
                 if (inputSequence[i] == "R") {
                     await changeColor(redSq, "#FF69B4", firstRoundDelay);
                     new Audio("sounds/red.wav").play();
