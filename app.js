@@ -60,7 +60,10 @@ async function getSequence(numRounds) {
         console.log(error);
     }
 }
-
+/**
+ * gets the welcome sequence printing
+ * @returns 
+ */
 async function welcome() {
     await getWelcome();
     return welcomeVar;
